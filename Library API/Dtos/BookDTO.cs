@@ -9,7 +9,6 @@
         public decimal Price { get; set; }
         public int Pages { get; set; }
         public DateTime PublishedYear { get; set; }
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
 
     }
 }
