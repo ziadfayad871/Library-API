@@ -22,18 +22,19 @@ namespace Library_API.Controllers
         [HttpGet]
         [ProducesResponseType(typeof(IEnumerable<BookDTO>), 200)]
         [ProducesResponseType(typeof(void), 404)]
-        public IActionResult GetBooks()
+        public async Task<IActionResult> GetBooks()
         {
-            var books = _bookRepository.GetAllBooks().Result;
+            var books = await _bookRepository.GetAllBooks();
 
             return Ok(books);
         }
-        [HttpGet("{id}")]
+        // id and Name of book
+        [HttpGet("{id}", Name = "GetBook")]
         [ProducesResponseType(typeof(BookDTO), 200)]
         [ProducesResponseType(typeof(void), 404)]
-        public IActionResult GetBook(int id)
+        public async Task<IActionResult> GetBook(int id)
         {
-            var book = _bookRepository.GetBookById(id).Result;
+            var book = await _bookRepository.GetBookById(id);
             if (book == null)
             {
                 return NotFound();
@@ -44,26 +45,45 @@ namespace Library_API.Controllers
         [HttpPost]
         [ProducesResponseType(typeof(BookDTO), 200)]
         [ProducesResponseType(typeof(void), 400)]
-        public IActionResult CreateBook([FromBody] BookCreateDTO bookCreateDTO)
+        public async Task<IActionResult> CreateBook([FromBody] BookCreateDTO bookCreateDTO)
         {
-            var book = _bookRepository.CreateBook(bookCreateDTO).Result;
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            var book = await _bookRepository.CreateBook(bookCreateDTO);
+            
             if (book == null)
             {
                 return BadRequest();
             }
-            return Ok(book);
+            
+            return CreatedAtRoute("GetBook", new { id = book.Id }, book);
         }
         // PUT   api/BookAPI -> تعديل كتاب - 20
-        [HttpPut]
+        [HttpPut("{id}")]
         [ProducesResponseType(typeof(BookDTO), 200)]
         [ProducesResponseType(typeof(void), 400)]
-        public IActionResult UpdateBook(BookUpdateDTO bookUpdateDTO)
+        public async Task<IActionResult> UpdateBook(BookUpdateDTO bookUpdateDTO , int id)
         {
-            var book = _bookRepository.UpdateBook(bookUpdateDTO).Result;
+            var bookFromDb = await _bookRepository.GetBookById(id);
+            // لو id اللي في الـ URL مختلف عن bookUpdateDTO.Id → 400 : 
+            if (bookFromDb == null )
+            {
+                return NotFound();
+            }
+            if (bookUpdateDTO.Id != id)
+            {
+                return BadRequest("ID in the URL does not match ID in the request body.");
+            }
+
+            var book = await _bookRepository.UpdateBook(bookUpdateDTO);
             if (book == null)
             {
-                return BadRequest();
+                // 404 : 
+                return NotFound();
             }
+
             return Ok(book);
         }
         // PATCH  api/BookAPI/{id} -> تعديل جزئي بـ JsonPatchDocument - 204 / 400 / 404
@@ -71,13 +91,13 @@ namespace Library_API.Controllers
         [ProducesResponseType(typeof(void), 204)]
         [ProducesResponseType(typeof(void), 400)]
         [ProducesResponseType(typeof(void), 404)]
-        public IActionResult PatchBook(int id, JsonPatchDocument<BookUpdateDTO> patchDoc)
+        public async Task<IActionResult> PatchBook(int id, JsonPatchDocument<BookUpdateDTO> patchDoc)
         {
             if (patchDoc == null)
             {
                 return BadRequest();
             }
-            var bookDto = _bookRepository.GetBookById(id).Result;
+            var bookDto = await _bookRepository.GetBookById(id);
             if (bookDto == null)
             {
                 return NotFound();
@@ -97,7 +117,7 @@ namespace Library_API.Controllers
             {
                 return BadRequest(ModelState);
             }
-            var updatedBook = _bookRepository.UpdateBook(bookToPatch).Result;
+            var updatedBook = await _bookRepository.UpdateBook(bookToPatch);
             if (updatedBook == null)
             {
                 return BadRequest();
@@ -109,19 +129,20 @@ namespace Library_API.Controllers
         [HttpDelete("{id}")]
         [ProducesResponseType(typeof(void), 200)]
         [ProducesResponseType(typeof(void), 404)]
-        public IActionResult DeleteBook(int id)
+        public async Task<IActionResult> DeleteBook(int id)
         {
-            var book = _bookRepository.GetBookById(id).Result;
+            var book = await _bookRepository.GetBookById(id);
             if (book == null)
             {
                 return NotFound();
             }
-            var result = _bookRepository.DeleteBook(id).Result;
+            var result = await _bookRepository.DeleteBook(id);
             if (!result)
             {
                 return BadRequest();
             }
-            return Ok();
+            var message = new { Message = $"Book with ID {id} has been deleted successfully." };
+            return Ok(message);
         }
     }
 }
