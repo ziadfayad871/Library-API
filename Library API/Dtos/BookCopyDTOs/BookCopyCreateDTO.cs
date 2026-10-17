@@ -4,6 +4,9 @@ namespace Library_API.Dtos.BookCopyDTOs
 {
     public class BookCopyCreateDTO
     {
+        [Required(ErrorMessage = "Copy number is required.")]
+        [Range(1, int.MaxValue, ErrorMessage = "Copy number must be greater than 0.")]
+        public int CopyNo { get; set; }
         [Required(ErrorMessage = "Book ID is required.")]
         [Range(1, int.MaxValue, ErrorMessage = "Book ID must be a positive integer.")]
         public int BookId { get; set; }
