@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Library_API.Data;
 using Library_API.Dtos;
+using Library_API.Dtos.APIResponse;
 using Library_API.Model;
 using Library_API.Repository.IRepository;
 using Microsoft.EntityFrameworkCore;
@@ -17,57 +18,135 @@ namespace Library_API.Repository.Repository
             _mapper = mapper;
         }
 
-        public async Task<BookDTO> CreateBook(BookCreateDTO bookCreateDTO)
+        public async Task<APIResponse> CreateBook(BookCreateDTO bookCreateDTO)
         {
-            var book = _mapper.Map<Book>(bookCreateDTO);
-            book.CreatedAt = DateTime.UtcNow;
-            await _context.Books.AddAsync(book);
-            await _context.SaveChangesAsync();
-            return _mapper.Map<BookDTO>(book);
-        }
-
-        public async Task<bool> DeleteBook(int bookId)
-        {
-            var book = await _context.Books.FirstOrDefaultAsync(b => b.Id == bookId);
-            if (book == null)
+            try
             {
-                return false;
+                var book = _mapper.Map<Book>(bookCreateDTO);
+                book.CreatedAt = DateTime.UtcNow;
+                await _context.Books.AddAsync(book);
+                await _context.SaveChangesAsync();
+                return new APIResponse
+                {
+                    StatusCode = 201,
+                    IsSuccess = true,
+                    Result = _mapper.Map<BookDTO>(book)
+                };
             }
-            _context.Books.Remove(book);
-            return await Save();
+            catch (Exception ex)
+            {
+                return new APIResponse
+                {
+                    StatusCode = 500,
+                    IsSuccess = false,
+                    ErrorMessages = new List<string> { ex.Message }
+                };
+            }
         }
 
-        public async Task<IEnumerable<BookDTO>> GetAllBooks()
+        public async Task<APIResponse> UpdateBook(BookUpdateDTO bookUpdateDTO)
         {
-            var books = await _context.Books.AsNoTracking().ToListAsync();
-            return _mapper.Map<IEnumerable<BookDTO>>(books);
+            try
+            {
+                var book = await _context.Books.FirstOrDefaultAsync(b => b.Id == bookUpdateDTO.Id);
+                if (book == null)
+                {
+                    return new APIResponse
+                    {
+                        StatusCode = 404,
+                        IsSuccess = false,
+                        ErrorMessages = new List<string> { "Book not found" }
+                    };
+                }
+                _mapper.Map(bookUpdateDTO, book);
+                await _context.SaveChangesAsync();
+                return new APIResponse
+                {
+                    StatusCode = 200,
+                    IsSuccess = true,
+                    Result = _mapper.Map<BookDTO>(book)
+                };
+            }
+            catch (Exception ex)
+            {
+                return new APIResponse
+                {
+                    StatusCode = 500,
+                    IsSuccess = false,
+                    ErrorMessages = new List<string> { ex.Message }
+                };
+            }
         }
 
-        public async Task<BookDTO> GetBookById(int bookId)
+        public async Task<APIResponse> GetBookById(int bookId)
         {
             var book = await _context.Books.AsNoTracking().FirstOrDefaultAsync(b => b.Id == bookId);
             if (book == null)
             {
-                return null!;
+                return new APIResponse
+                {
+                    StatusCode = 404,
+                    IsSuccess = false,
+                    ErrorMessages = new List<string> { "Book not found" }
+                };
             }
-            return _mapper.Map<BookDTO>(book);
+            return new APIResponse
+            {
+                StatusCode = 200,
+                IsSuccess = true,
+                Result = _mapper.Map<BookDTO>(book)
+            };
+        }
+
+        public async Task<APIResponse> GetAllBooks()
+        {
+            var books = await _context.Books.AsNoTracking().ToListAsync();
+            return new APIResponse
+            {
+                StatusCode = 200,
+                IsSuccess = true,
+                Result = _mapper.Map<IEnumerable<BookDTO>>(books)
+            };
+        }
+
+        public async Task<APIResponse> DeleteBook(int bookId)
+        {
+            try
+            {
+                var book = await _context.Books.FirstOrDefaultAsync(b => b.Id == bookId);
+                if (book == null)
+                {
+                    return new APIResponse
+                    {
+                        StatusCode = 404,
+                        IsSuccess = false,
+                        ErrorMessages = new List<string> { "Book not found" }
+                    };
+                }
+                var deletedBook = _mapper.Map<BookDTO>(book);
+                _context.Books.Remove(book);
+                await _context.SaveChangesAsync();
+                return new APIResponse
+                {
+                    StatusCode = 200,
+                    IsSuccess = true,
+                    Result = deletedBook
+                };
+            }
+            catch (Exception ex)
+            {
+                return new APIResponse
+                {
+                    StatusCode = 500,
+                    IsSuccess = false,
+                    ErrorMessages = new List<string> { ex.Message }
+                };
+            }
         }
 
         public async Task<bool> Save()
         {
             return await _context.SaveChangesAsync() > 0;
-        }
-
-        public async Task<BookDTO> UpdateBook(BookUpdateDTO bookUpdateDTO)
-        {
-            var book = await _context.Books.FirstOrDefaultAsync(b => b.Id == bookUpdateDTO.Id);
-            if (book == null)
-            {
-                return null!;
-            }
-            _mapper.Map(bookUpdateDTO, book);
-            await _context.SaveChangesAsync();
-            return _mapper.Map<BookDTO>(book);
         }
     }
 }

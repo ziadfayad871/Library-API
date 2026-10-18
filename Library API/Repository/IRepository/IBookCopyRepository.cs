@@ -1,15 +1,15 @@
-﻿using Library_API.Dtos.BookCopyDTOs;
-using Library_API.Model;
+﻿using Library_API.Dtos.APIResponse;
+using Library_API.Dtos.BookCopyDTOs;
 
 namespace Library_API.Repository.IRepository
 {
     public interface IBookCopyRepository
     {
-        public Task<BookCopyDTO> GetBookCopyByIdAsync(int id);
-        public Task<IEnumerable<BookCopyDTO>> GetAllBookCopiesAsync();
-        public Task<BookCopyDTO> AddBookCopyAsync(BookCopyCreateDTO bookCopy);
-        public Task<BookCopyDTO> UpdateBookCopyAsync(BookCopyUpdateDTO bookCopy);
-        public Task<bool> DeleteBookCopyAsync(int id);
+        public Task<APIResponse> GetBookCopyByIdAsync(int id);
+        public Task<APIResponse> GetAllBookCopiesAsync();
+        public Task<APIResponse> AddBookCopyAsync(BookCopyCreateDTO bookCopy);
+        public Task<APIResponse> UpdateBookCopyAsync(BookCopyUpdateDTO bookCopy);
+        public Task<APIResponse> DeleteBookCopyAsync(int id);
         public Task<bool> Save();
     }
 }

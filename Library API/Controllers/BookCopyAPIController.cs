@@ -1,15 +1,12 @@
-﻿using Library_API.Dtos;
+﻿using Library_API.Dtos.APIResponse;
 using Library_API.Dtos.BookCopyDTOs;
 using Library_API.Repository.IRepository;
-using Library_API.Repository.Repository;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Library_API.Controllers
 {
     [Route("api/BookCopyAPI")]
-    // [Route("api/[controller]")]
     [ApiController]
     public class BookCopyAPIController : ControllerBase
     {
@@ -19,120 +16,105 @@ namespace Library_API.Controllers
         {
             _bookCopyRepository = bookCopyRepository;
         }
-        // code status: 200 OK
+
         [HttpGet]
-        [ProducesResponseType(typeof(IEnumerable<BookCopyDTO>), 200)]
-        [ProducesResponseType(typeof(void), 404)]
+        [ProducesResponseType(typeof(APIResponse), 200)]
         public async Task<IActionResult> GetBookCopies()
         {
-            var bookCopies = await _bookCopyRepository.GetAllBookCopiesAsync() ;
-           
-           
-            return Ok(bookCopies);
+            var response = await _bookCopyRepository.GetAllBookCopiesAsync();
+            return StatusCode(response.StatusCode, response);
         }
+
         [HttpGet("{id}", Name = "GetBookCopy")]
-        [ProducesResponseType(typeof(BookCopyDTO), 200)]
-        [ProducesResponseType(typeof(void), 404)]
+        [ProducesResponseType(typeof(APIResponse), 200)]
+        [ProducesResponseType(typeof(APIResponse), 404)]
         public async Task<IActionResult> GetBookCopy(int id)
         {
-            var bookCopy = await _bookCopyRepository.GetBookCopyByIdAsync(id);
-            if (bookCopy == null)
-            {
-                return NotFound();
-            }
-            
-            return Ok(bookCopy);
+            var response = await _bookCopyRepository.GetBookCopyByIdAsync(id);
+            return StatusCode(response.StatusCode, response);
         }
+
         [HttpPost]
-        [ProducesResponseType(typeof(BookCopyDTO), 201)]
-        [ProducesResponseType(typeof(void), 400)]
+        [ProducesResponseType(typeof(APIResponse), 201)]
+        [ProducesResponseType(typeof(APIResponse), 400)]
         public async Task<IActionResult> CreateBookCopy([FromBody] BookCopyCreateDTO bookCopy)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
-            var createdBookCopy = await _bookCopyRepository.AddBookCopyAsync(bookCopy);
-            return CreatedAtRoute("GetBookCopy", new { id = createdBookCopy.CopyNo }, createdBookCopy);
+            var response = await _bookCopyRepository.AddBookCopyAsync(bookCopy);
+            if (!response.IsSuccess)
+            {
+                return StatusCode(response.StatusCode, response);
+            }
+            var createdBookCopy = (BookCopyDTO)response.Result;
+            return CreatedAtRoute("GetBookCopy", new { id = createdBookCopy.CopyNo }, response);
         }
+
         [HttpPut("{id}")]
-        [ProducesResponseType(typeof(BookCopyDTO), 200)]
-        [ProducesResponseType(typeof(void), 400)]
+        [ProducesResponseType(typeof(APIResponse), 200)]
+        [ProducesResponseType(typeof(APIResponse), 400)]
+        [ProducesResponseType(typeof(APIResponse), 404)]
         public async Task<IActionResult> UpdateBookCopy(int id, [FromBody] BookCopyUpdateDTO bookCopy)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
             if (id != bookCopy.CopyNo)
             {
-                return BadRequest("ID mismatch");
+                return BadRequest(new APIResponse
+                {
+                    StatusCode = 400,
+                    IsSuccess = false,
+                    ErrorMessages = new List<string> { "ID in the URL does not match CopyNo in the request body." }
+                });
             }
-            
-            var updatedBookCopy = await _bookCopyRepository.UpdateBookCopyAsync(bookCopy);
-            if (updatedBookCopy == null)
-            {
-                return NotFound();
-            }
-            return Ok(updatedBookCopy);
+            var response = await _bookCopyRepository.UpdateBookCopyAsync(bookCopy);
+            return StatusCode(response.StatusCode, response);
         }
+
         [HttpDelete("{id}")]
-        [ProducesResponseType(typeof(bool), 200)]
-        [ProducesResponseType(typeof(void), 400)]
+        [ProducesResponseType(typeof(APIResponse), 200)]
+        [ProducesResponseType(typeof(APIResponse), 404)]
         public async Task<IActionResult> DeleteBookCopy(int id)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-            var bookCopy = await _bookCopyRepository.GetBookCopyByIdAsync(id);
-            if (bookCopy == null)
-            {
-                return NotFound();
-            }
-            if (bookCopy.IsAvailable == false)
-            {
-                return BadRequest("Cannot delete a book copy that is currently checked out.");
-            }
-            var isDeleted = await _bookCopyRepository.DeleteBookCopyAsync(id);
-            return Ok(isDeleted);
+            var response = await _bookCopyRepository.DeleteBookCopyAsync(id);
+            return StatusCode(response.StatusCode, response);
         }
-        // PATCH  api/BookAPI/{id} -> تعديل جزئي بـ JsonPatchDocument - 204 / 400 / 404
+
         [HttpPatch("{id}")]
         [ProducesResponseType(typeof(void), 204)]
-        [ProducesResponseType(typeof(void), 400)]
-        [ProducesResponseType(typeof(void), 404)]
-        public async Task<IActionResult> PatchBook(int id, JsonPatchDocument<BookCopyUpdateDTO> patchDoc)
+        [ProducesResponseType(typeof(APIResponse), 400)]
+        [ProducesResponseType(typeof(APIResponse), 404)]
+        public async Task<IActionResult> PatchBookCopy(int id, [FromBody] JsonPatchDocument<BookCopyUpdateDTO> patchDoc)
         {
             if (patchDoc == null)
             {
                 return BadRequest();
             }
-            var bookDto = await _bookCopyRepository.GetBookCopyByIdAsync(id);
-            if (bookDto == null)
+            var response = await _bookCopyRepository.GetBookCopyByIdAsync(id);
+            if (!response.IsSuccess)
             {
-                return NotFound();
+                return StatusCode(response.StatusCode, response);
             }
-            var bookToPatch = new BookCopyUpdateDTO
+            var bookCopyDto = (BookCopyDTO)response.Result;
+            var bookCopyToPatch = new BookCopyUpdateDTO
             {
-                CopyNo = bookDto.CopyNo,
-                BookId = bookDto.BookId,
-                ShelfLocation = bookDto.ShelfLocation,
-                IsAvailable = bookDto.IsAvailable,
-                Condition = bookDto.Condition
+                CopyNo = bookCopyDto.CopyNo,
+                BookId = bookCopyDto.BookId,
+                ShelfLocation = bookCopyDto.ShelfLocation,
+                IsAvailable = bookCopyDto.IsAvailable,
+                Condition = bookCopyDto.Condition
             };
-            patchDoc.ApplyTo(bookToPatch, ModelState);
+            patchDoc.ApplyTo(bookCopyToPatch, ModelState);
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
-            var updatedBook = await _bookCopyRepository.UpdateBookCopyAsync(bookToPatch);
-            if (updatedBook == null)
+            var updateResponse = await _bookCopyRepository.UpdateBookCopyAsync(bookCopyToPatch);
+            if (!updateResponse.IsSuccess)
             {
-                return BadRequest();
+                return StatusCode(updateResponse.StatusCode, updateResponse);
             }
             return NoContent();
-
         }
     }
 }

@@ -1,14 +1,15 @@
 ﻿using Library_API.Dtos;
+using Library_API.Dtos.APIResponse;
 
 namespace Library_API.Repository.IRepository
 {
     public interface IBookRepository
     {
-        public Task<BookDTO> CreateBook(BookCreateDTO bookCreateDTO);
-        public Task<BookDTO> UpdateBook(BookUpdateDTO bookUpdateDTO);
-        public Task<BookDTO> GetBookById(int bookId);
-        public Task<IEnumerable<BookDTO>> GetAllBooks();
-        public Task<bool> DeleteBook(int bookId);
+        public Task<APIResponse> CreateBook(BookCreateDTO bookCreateDTO);
+        public Task<APIResponse> UpdateBook(BookUpdateDTO bookUpdateDTO);
+        public Task<APIResponse> GetBookById(int bookId);
+        public Task<APIResponse> GetAllBooks();
+        public Task<APIResponse> DeleteBook(int bookId);
         public Task<bool> Save();
     }
 }
