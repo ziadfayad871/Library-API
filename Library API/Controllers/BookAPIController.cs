@@ -18,9 +18,9 @@ namespace Library_API.Controllers
 
         [HttpGet]
         [ProducesResponseType(typeof(APIResponse), 200)]
-        public async Task<IActionResult> GetBooks()
+        public async Task<IActionResult> GetBooks(string? author = null)
         {
-            var response = await _bookRepository.GetAllBooks();
+            var response = await _bookRepository.GetAllBooks(author);
             return StatusCode(response.StatusCode, response);
         }
 

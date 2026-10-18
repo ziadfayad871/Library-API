@@ -98,15 +98,19 @@ namespace Library_API.Repository.Repository
             };
         }
 
-        public async Task<APIResponse> GetAllBooks()
+        public async Task<APIResponse> GetAllBooks(string? author = null)
         {
-            var books = await _context.Books.AsNoTracking().ToListAsync();
+            var query = _context.Books.AsNoTracking().AsQueryable();
+            if (!string.IsNullOrEmpty(author))
+                query = query.Where(b => b.Author.Contains(author));
+            var books = await query.ToListAsync();
             return new APIResponse
             {
                 StatusCode = 200,
                 IsSuccess = true,
                 Result = _mapper.Map<IEnumerable<BookDTO>>(books)
             };
+           
         }
 
         public async Task<APIResponse> DeleteBook(int bookId)
@@ -124,6 +128,16 @@ namespace Library_API.Repository.Repository
                     };
                 }
                 var deletedBook = _mapper.Map<BookDTO>(book);
+                var BookCopies = await _context.BookCopies.Where(bc => bc.BookId == bookId).ToListAsync();
+                if (BookCopies.Any())
+                {
+                    return new APIResponse
+                    {
+                        StatusCode = 400,
+                        IsSuccess = false,
+                        ErrorMessages = new List<string> { "Cannot delete a book that has book copies." }
+                    };
+                }
                 _context.Books.Remove(book);
                 await _context.SaveChangesAsync();
                 return new APIResponse
