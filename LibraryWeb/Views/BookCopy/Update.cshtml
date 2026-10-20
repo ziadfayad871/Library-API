@@ -1,0 +1,52 @@
+@model BookCopyUpdateDTO
+
+@{
+    ViewData["Title"] = "Update Book Copy";
+}
+
+<div class="container p-3">
+    <h2 class="text-primary">Update Book Copy</h2>
+    <hr />
+
+    <form asp-action="Update" method="post">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+        <div class="mb-3">
+            <label asp-for="CopyNo" class="form-label"></label>
+            <input asp-for="CopyNo" type="number" class="form-control" readonly />
+            <span asp-validation-for="CopyNo" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="BookId" class="form-label">Book</label>
+            <select asp-for="BookId" asp-items="ViewBag.BooksList" class="form-select">
+                <option value="">-- Select Book --</option>
+            </select>
+            <span asp-validation-for="BookId" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="ShelfLocation" class="form-label"></label>
+            <input asp-for="ShelfLocation" class="form-control" />
+            <span asp-validation-for="ShelfLocation" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3 form-check">
+            <input asp-for="IsAvailable" class="form-check-input" />
+            <label asp-for="IsAvailable" class="form-check-label"></label>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Condition" class="form-label"></label>
+            <input asp-for="Condition" class="form-control" />
+            <span asp-validation-for="Condition" class="text-danger"></span>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Update</button>
+        <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

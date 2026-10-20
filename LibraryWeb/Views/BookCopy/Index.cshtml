@@ -1,0 +1,129 @@
+@model IEnumerable<BookCopyDTO>
+
+@{
+    ViewData["Title"] = "Book Copies";
+    var bookTitles = ViewData["BookTitles"] as Dictionary<int, string>;
+}
+
+<div class="container p-3">
+    <div class="row pt-4">
+        <div class="col-6">
+            <h2 class="text-primary">Book Copy List</h2>
+        </div>
+        <div class="col-6 text-end">
+            <a asp-controller="BookCopy" asp-action="Create" class="btn btn-primary">
+                Create New Book Copy
+            </a>
+        </div>
+    </div>
+
+    <br />
+
+    @if (TempData["Success"] != null)
+    {
+        <input type="hidden" id="successMessage" value="@TempData["Success"]" />
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <input type="hidden" id="errorMessage" value="@TempData["Error"]" />
+    }
+
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Copy No</th>
+                <th>Book</th>
+                <th>Shelf Location</th>
+                <th>Availability</th>
+                <th>Condition</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model != null && Model.Any())
+            {
+                foreach (var copy in Model)
+                {
+                    var bookName = bookTitles != null && bookTitles.ContainsKey(copy.BookId)
+                        ? bookTitles[copy.BookId]
+                        : copy.BookId.ToString();
+
+                    <tr>
+                        <td>@copy.CopyNo</td>
+                        <td>@bookName</td>
+                        <td>@copy.ShelfLocation</td>
+                        <td>
+                            @if (copy.IsAvailable)
+                            {
+                                <span class="badge bg-success">Available</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">Borrowed</span>
+                            }
+                        </td>
+                        <td>@copy.Condition</td>
+                        <td>
+                            <a asp-action="Update" asp-route-id="@copy.CopyNo" class="btn btn-sm btn-warning">Edit</a>
+                            <form asp-action="Delete" asp-route-id="@copy.CopyNo" method="post" class="d-inline delete-form">
+                                <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="6" class="text-center">No book copies found.</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@section Scripts {
+    <script>
+        $(function () {
+            $('.delete-form').on('submit', function (e) {
+                e.preventDefault();
+                var form = this;
+
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "You won't be able to revert this book copy!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Yes, delete it!',
+                    cancelButtonText: 'Cancel'
+                }).then(function (result) {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                });
+            });
+
+            var Toast = Swal.mixin({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true
+            });
+
+            var successMessage = $('#successMessage').val();
+            var errorMessage = $('#errorMessage').val();
+
+            if (successMessage) {
+                Toast.fire({ icon: 'success', title: successMessage });
+            }
+
+            if (errorMessage) {
+                Toast.fire({ icon: 'error', title: errorMessage });
+            }
+        });
+    </script>
+}
