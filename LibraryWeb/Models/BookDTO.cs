@@ -1,4 +1,4 @@
-﻿namespace rakoltodev.Models
+namespace LibraryWeb.Models
 {
     public class BookDTO
     {

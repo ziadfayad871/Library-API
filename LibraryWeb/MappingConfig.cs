@@ -1,8 +1,8 @@
-﻿using AutoMapper;
-using rakoltodev.Models;
-using rakoltodev.Models.CopyDTO;
+using AutoMapper;
+using LibraryWeb.Models;
+using LibraryWeb.Models.CopyDTO;
 
-namespace rakoltodev
+namespace LibraryWeb
 {
     public class MappingConfig : Profile
     {

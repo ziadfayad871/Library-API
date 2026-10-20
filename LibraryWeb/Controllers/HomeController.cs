@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
-using rakoltodev.Models;
+using LibraryWeb.Models;
 using System.Diagnostics;
 
-namespace rakoltodev.Controllers
+namespace LibraryWeb.Controllers
 {
     public class HomeController : Controller
     {

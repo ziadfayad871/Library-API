@@ -1,4 +1,4 @@
-﻿namespace rakoltodev.Models.APIResponse
+namespace LibraryWeb.Models.APIResponse
 {
     public class APIResponse
     {

@@ -1,11 +1,11 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
-namespace rakoltodev.Models.CopyDTO
+namespace LibraryWeb.Models.CopyDTO
 {
-    public class BookCopyCreateDTO
+    public class BookCopyDTO
     {
         [Required(ErrorMessage = "Copy number is required.")]
-        [Range(1, int.MaxValue, ErrorMessage = "Copy number must be greater than 0.")]
+        [Range(1, int.MaxValue, ErrorMessage = "Copy number must be a positive integer.")]
         public int CopyNo { get; set; }
         [Required(ErrorMessage = "Book ID is required.")]
         [Range(1, int.MaxValue, ErrorMessage = "Book ID must be a positive integer.")]
@@ -16,8 +16,10 @@ namespace rakoltodev.Models.CopyDTO
         public string ShelfLocation { get; set; } = string.Empty;
 
         public bool IsAvailable { get; set; }
+        // Condition :
         [Required(ErrorMessage = "Condition is required.")]
         [StringLength(20, ErrorMessage = "Condition cannot exceed 20 characters.")]
         public string Condition { get; set; } = "Good";
+
     }
 }

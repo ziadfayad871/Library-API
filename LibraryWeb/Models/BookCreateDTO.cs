@@ -1,12 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations;
-using rakoltodev.Validation;
+using System.ComponentModel.DataAnnotations;
+using LibraryWeb.Validation;
 
-namespace rakoltodev.Models
+namespace LibraryWeb.Models
 {
-    public class BookUpdateDTO
+    public class BookCreateDTO
     {
-        [Required]
-        public int Id { get; set; }
 
         [Required(ErrorMessage = "Book name is required.")]
         [MinLength(1, ErrorMessage = "Book name cannot be empty.")]
@@ -28,6 +26,7 @@ namespace rakoltodev.Models
         [Required(ErrorMessage = "Published year is required.")]
         [NotInFuture(ErrorMessage = "Published year cannot be in the future.")]
         public DateTime PublishedYear { get; set; }
+
 
     }
 }

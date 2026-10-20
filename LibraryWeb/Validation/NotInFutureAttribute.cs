@@ -1,6 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
-namespace rakoltodev.Validation
+namespace LibraryWeb.Validation
 {
     public class NotInFutureAttribute : ValidationAttribute
     {
