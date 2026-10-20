@@ -14,6 +14,12 @@ CreateMap<BookCreateDTO, BookDTO>();
             CreateMap<BookDTO, BookUpdateDTO>();
             CreateMap<BookUpdateDTO, BookDTO>();
 
+            // BookCopy mapping
+            CreateMap<BookCopyDTO, BookCopyCreateDTO>();
+            CreateMap<BookCopyCreateDTO, BookCopyDTO>();
+            CreateMap<BookCopyDTO, BookCopyUpdateDTO>();
+            CreateMap<BookCopyUpdateDTO, BookCopyDTO>();
+
 
         }
     }
