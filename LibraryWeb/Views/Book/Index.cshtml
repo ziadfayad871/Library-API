@@ -1,0 +1,126 @@
+@model IEnumerable<BookDTO>
+
+@{
+    ViewData["Title"] = "Books";
+}
+
+<div class="container p-3">
+    <div class="row pt-4">
+        <div class="col-6">
+            <h2 class="text-primary">Book List</h2>
+        </div>
+        <div class="col-6 text-end">
+            <a asp-controller="Book" asp-action="Create" class="btn btn-primary">
+                Create New Book
+            </a>
+        </div>
+    </div>
+
+    <br />
+
+    @if (TempData["Success"] != null)
+    {
+        <input type="hidden" id="successMessage" value="@TempData["Success"]" />
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <input type="hidden" id="errorMessage" value="@TempData["Error"]" />
+    }
+
+    <form asp-action="Index" method="get" class="row g-2 mb-3">
+        <div class="col-auto">
+            <input type="text" name="author" value="@ViewBag.Author" class="form-control"
+                   placeholder="Search by author..." />
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-secondary">Search</button>
+            <a asp-action="Index" class="btn btn-outline-secondary">Clear</a>
+        </div>
+    </form>
+
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Author</th>
+                <th>Price</th>
+                <th>Pages</th>
+                <th>Published Year</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model != null && Model.Any())
+            {
+                foreach (var book in Model)
+                {
+                    <tr>
+                        <td>@book.Name</td>
+                        <td>@book.Author</td>
+                        <td>@book.Price.ToString("0.00")</td>
+                        <td>@book.Pages</td>
+                        <td>@book.PublishedYear.ToString("yyyy-MM-dd")</td>
+                        <td>
+                            <a asp-action="Update" asp-route-id="@book.Id" class="btn btn-sm btn-warning">Edit</a>
+                            <form asp-action="Delete" asp-route-id="@book.Id" method="post" class="d-inline delete-form">
+                                <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="6" class="text-center">No books found.</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@section Scripts {
+    <script>
+        $(function () {
+            $('.delete-form').on('submit', function (e) {
+                e.preventDefault();
+                var form = this;
+
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "You won't be able to revert this book!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Yes, delete it!',
+                    cancelButtonText: 'Cancel'
+                }).then(function (result) {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                });
+            });
+
+            var Toast = Swal.mixin({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true
+            });
+
+            var successMessage = $('#successMessage').val();
+            var errorMessage = $('#errorMessage').val();
+
+            if (successMessage) {
+                Toast.fire({ icon: 'success', title: successMessage });
+            }
+
+            if (errorMessage) {
+                Toast.fire({ icon: 'error', title: errorMessage });
+            }
+        });
+    </script>
+}

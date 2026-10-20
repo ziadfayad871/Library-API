@@ -1,3 +1,6 @@
+using LibraryWeb.Services.IServices;
+using LibraryWeb.Services.Services;
+
 namespace LibraryWeb
 {
     public class Program
@@ -6,6 +9,11 @@ namespace LibraryWeb
         {
             var builder = WebApplication.CreateBuilder(args);
             builder.Services.AddAutoMapper(typeof(MappingConfig));
+            // http client for API call
+            builder.Services.AddHttpClient<IBaseService, BaseService>();
+
+            builder.Services.AddScoped<IBookService, BookService>();
+            builder.Services.AddScoped<IBookCopyService, BookCopyService>();
 
             // Add services to the container.
             builder.Services.AddControllersWithViews();
