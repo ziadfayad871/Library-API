@@ -2,6 +2,7 @@
 using Library_API.Dtos;
 using Library_API.Dtos.BookCopyDTOs;
 using Library_API.Model;
+using Library_API.Models;
 
 namespace Library_API
 {
@@ -29,8 +30,11 @@ namespace Library_API
             // create mapping for BookCopyDTO to BookCopy and vice versa
             CreateMap<BookCopy, BookCopyDTO>();
             CreateMap<BookCopyDTO, BookCopy>();
+            // User mapping
+            CreateMap<User, UserDTO>();
 
-            
+            CreateMap<RegistrationRequestDTO, User>();
+
 
         }
     }

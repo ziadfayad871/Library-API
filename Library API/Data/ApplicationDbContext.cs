@@ -1,5 +1,6 @@
 ﻿
 using Library_API.Model;
+using Library_API.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace Library_API.Data
@@ -14,6 +15,7 @@ namespace Library_API.Data
 
         public DbSet<Book> Books { get; set; }
         public DbSet<BookCopy> BookCopies { get; set; }
+        public DbSet<User> Users { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -68,6 +70,9 @@ namespace Library_API.Data
 
             modelBuilder.Entity<Book>()
                 .HasIndex(b => b.Name)
+                .IsUnique();
+            modelBuilder.Entity<User>()
+                .HasIndex(u => u.UserName)
                 .IsUnique();
         }
     }

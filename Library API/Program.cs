@@ -1,8 +1,10 @@
 
 using Library_API;
 using Library_API.Data;
+using Library_API.Models;
 using Library_API.Repository.IRepository;
 using Library_API.Repository.Repository;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 
@@ -15,10 +17,11 @@ namespace Library_API
             var builder = WebApplication.CreateBuilder(args);
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-            builder.Services.AddAutoMapper(typeof(MappingConfig));
+            builder.Services.AddAutoMapper(cfg => { }, typeof(MappingConfig).Assembly);
             builder.Services.AddScoped<IBookRepository, BookRepository>();
             builder.Services.AddScoped<IBookCopyRepository, BookCopyRepository>();
-
+            builder.Services.AddScoped<IUserRepository, UserRepository>();
+            builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
             // Add services to the container.
 
             builder.Services.AddControllers().AddNewtonsoftJson();
