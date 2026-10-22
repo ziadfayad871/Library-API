@@ -1,6 +1,7 @@
 ﻿using Library_API.Dtos;
 using Library_API.Dtos.APIResponse;
 using Library_API.Repository.IRepository;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,6 +9,7 @@ namespace Library_API.Controllers
 {
     [Route("api/BookAPI")]
     [ApiController]
+    [Authorize]
     public class BookAPIController : ControllerBase
     {
         private readonly IBookRepository _bookRepository;

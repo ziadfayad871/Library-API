@@ -1,6 +1,7 @@
 ﻿using Library_API.Dtos;
 using Library_API.Dtos.APIResponse;
 using Library_API.Repository.IRepository;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,6 +9,7 @@ namespace Library_API.Controllers
 {
     [Route("api/UserAPI")]
     [ApiController]
+    //[Authorize]
     public class UserAPIController : ControllerBase
     {
         private readonly IUserRepository _userRepository;
@@ -19,6 +21,7 @@ namespace Library_API.Controllers
         [ProducesResponseType(typeof(APIResponse), 200)]
         [ProducesResponseType(typeof(APIResponse), 404)]
         [ProducesResponseType(typeof(APIResponse), 400)]
+        [AllowAnonymous]
         // frombody
         public async Task<IActionResult> Register( [FromBody] RegistrationRequestDTO registrationRequestDTO)
         {
@@ -45,6 +48,10 @@ namespace Library_API.Controllers
             });
         }
         [HttpPost("login")]
+        [ProducesResponseType(typeof(APIResponse), 200)]
+        [ProducesResponseType(typeof(APIResponse), 404)]
+        [ProducesResponseType(typeof(APIResponse), 400)]
+        [AllowAnonymous]
         public async Task<IActionResult> Login([FromBody] LoginRequestDTO loginRequestDTO)
         {
             if (!ModelState.IsValid)
