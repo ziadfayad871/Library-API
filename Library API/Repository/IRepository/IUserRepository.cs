@@ -6,5 +6,6 @@ namespace Library_API.Repository.IRepository
     {
         Task<bool> IsUniqueUser(string username);
         Task<UserDTO> Register(RegistrationRequestDTO registrationRequestDTO);
+        Task<LoginResponseDTO> Login(LoginRequestDTO loginRequestDTO);
     }
 }

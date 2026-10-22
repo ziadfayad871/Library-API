@@ -4,9 +4,12 @@ using Library_API.Data;
 using Library_API.Models;
 using Library_API.Repository.IRepository;
 using Library_API.Repository.Repository;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
+using System.Text;
 
 namespace Library_API
 {
@@ -22,6 +25,18 @@ namespace Library_API
             builder.Services.AddScoped<IBookCopyRepository, BookCopyRepository>();
             builder.Services.AddScoped<IUserRepository, UserRepository>();
             builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
+            builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options =>
+                {
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuerSigningKey = true,
+                        IssuerSigningKey = new SymmetricSecurityKey(
+                            Encoding.ASCII.GetBytes(builder.Configuration["ApiSettings:Secret"])),
+                        ValidateIssuer = false,
+                        ValidateAudience = false
+                    };
+                });
             // Add services to the container.
 
             builder.Services.AddControllers().AddNewtonsoftJson();
@@ -38,6 +53,7 @@ namespace Library_API
             }
 
             app.UseHttpsRedirection();
+            app.UseAuthentication();
 
             app.UseAuthorization();
 

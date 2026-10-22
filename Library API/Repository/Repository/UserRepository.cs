@@ -5,6 +5,10 @@ using Library_API.Models;
 using Library_API.Repository.IRepository;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
 namespace Library_API.Repository.Repository
 {
@@ -13,11 +17,13 @@ namespace Library_API.Repository.Repository
         private readonly ApplicationDbContext _context;
         private readonly IMapper _mapper;
         private readonly IPasswordHasher<User> _passwordHasher;
-        public UserRepository(ApplicationDbContext context, IMapper mapper , IPasswordHasher<User> passwordHasher)
+        private readonly IConfiguration _configuration;
+        public UserRepository(ApplicationDbContext context, IMapper mapper , IPasswordHasher<User> passwordHasher, IConfiguration configuration)
         {
             _context = context;
             _mapper = mapper;
             _passwordHasher = passwordHasher;
+            _configuration = configuration;
         }
 
         public async Task<bool> IsUniqueUser(string username)
@@ -29,6 +35,39 @@ namespace Library_API.Repository.Repository
 
 
 
+        }
+
+        public async Task<LoginResponseDTO> Login(LoginRequestDTO loginRequestDTO)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserName == loginRequestDTO.Username);
+            if (user == null)
+            {
+                return null;
+            }
+            var passwordVerificationResult = _passwordHasher.VerifyHashedPassword(user, user.Password, loginRequestDTO.Password);
+            if (passwordVerificationResult == PasswordVerificationResult.Failed)
+            {
+                return null;
+            }
+        var userDTO = _mapper.Map<UserDTO>(user);
+            var secret = _configuration.GetValue<string>("ApiSettings:Secret");
+            var key = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(secret));
+            var Claims = new List<Claim>
+{
+    new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
+    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+    new Claim(ClaimTypes.Name, user.UserName),
+    new Claim(ClaimTypes.Role, user.Role),
+    new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
+};
+            var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+            var token = new JwtSecurityToken(
+    claims: Claims,
+    expires: DateTime.UtcNow.AddDays(7),
+    signingCredentials: credentials);
+
+            var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
+            return new LoginResponseDTO { User = userDTO, Token = tokenString };
         }
 
         public async Task<UserDTO> Register(RegistrationRequestDTO registrationRequestDTO)
