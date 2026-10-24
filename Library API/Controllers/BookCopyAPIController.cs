@@ -1,4 +1,5 @@
-﻿using Library_API.Dtos.APIResponse;
+﻿using Asp.Versioning;
+using Library_API.Dtos.APIResponse;
 using Library_API.Dtos.BookCopyDTOs;
 using Library_API.Repository.IRepository;
 using Microsoft.AspNetCore.Authorization;
@@ -7,7 +8,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Library_API.Controllers
 {
-    [Route("api/BookCopyAPI")]
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/BookCopyAPI")]
     [ApiController]
     [Authorize]
     public class BookCopyAPIController : ControllerBase

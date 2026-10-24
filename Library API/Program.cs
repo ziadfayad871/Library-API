@@ -1,4 +1,5 @@
 
+using Asp.Versioning;
 using Library_API;
 using Library_API.Data;
 using Library_API.Models;
@@ -38,6 +39,12 @@ namespace Library_API
                         ValidateAudience = false
                     };
                 });
+            builder.Services.AddApiVersioning(options =>
+            {
+                options.AssumeDefaultVersionWhenUnspecified = true;
+                options.DefaultApiVersion = new ApiVersion(1, 0);
+                options.ReportApiVersions = true;
+            });
             // Add services to the container.
 
             builder.Services.AddControllers().AddNewtonsoftJson();
