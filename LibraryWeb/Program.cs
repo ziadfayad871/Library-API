@@ -14,7 +14,8 @@ namespace LibraryWeb
 
             builder.Services.AddScoped<IBookService, BookService>();
             builder.Services.AddScoped<IBookCopyService, BookCopyService>();
-            
+            builder.Services.AddScoped<IAuthService, AuthService>();
+
 
             // Add services to the container.
             builder.Services.AddControllersWithViews();
