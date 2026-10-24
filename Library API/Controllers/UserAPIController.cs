@@ -1,4 +1,5 @@
-﻿using Library_API.Dtos;
+﻿using Asp.Versioning;
+using Library_API.Dtos;
 using Library_API.Dtos.APIResponse;
 using Library_API.Repository.IRepository;
 using Microsoft.AspNetCore.Authorization;
@@ -7,7 +8,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Library_API.Controllers
 {
-    [Route("api/UserAPI")]
+    [Route("api/v{version:apiVersion}/UserAPI")]
+    [ApiVersion("1.0")]
     [ApiController]
     //[Authorize]
     public class UserAPIController : ControllerBase

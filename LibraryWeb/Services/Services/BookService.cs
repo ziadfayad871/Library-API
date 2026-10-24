@@ -23,7 +23,7 @@ namespace LibraryWeb.Services.Services
             {
                 Type = ApiType.POST,
                 Data = bookCreateDTO,
-                Url = $"{_libraryApiUrl}/api/BookAPI"
+                Url = $"{_libraryApiUrl}/api/v1/BookAPI"
             });
 
             if (apiResponse.IsSuccess && apiResponse.Result != null)
@@ -42,7 +42,7 @@ namespace LibraryWeb.Services.Services
             {
                 Type = ApiType.DELETE,
                 Data = bookId,
-                Url = $"{_libraryApiUrl}/api/BookAPI"+ $"/{bookId}"
+                Url = $"{_libraryApiUrl}/api/v1/BookAPI"+ $"/{bookId}"
             });
 
            
@@ -54,7 +54,7 @@ namespace LibraryWeb.Services.Services
            var apiResponse = await SendAsync(new APIRequest
            {
                Type = ApiType.GET,
-               Url = $"{_libraryApiUrl}/api/BookAPI" + (string.IsNullOrEmpty(author) ? "" : $"?author={Uri.EscapeDataString(author)}")
+               Url = $"{_libraryApiUrl}/api/v1/BookAPI" + (string.IsNullOrEmpty(author) ? "" : $"?author={Uri.EscapeDataString(author)}")
            });
             if (apiResponse.IsSuccess && apiResponse.Result != null)
             {
@@ -68,7 +68,7 @@ namespace LibraryWeb.Services.Services
             var apiResponse = await SendAsync(new APIRequest
             {
                 Type = ApiType.GET,
-                Url = $"{_libraryApiUrl}/api/BookAPI/{bookId}"
+                Url = $"{_libraryApiUrl}/api/v1/BookAPI/{bookId}"
             });
             // convert the result to BookDTO if the response is successful and the result is not null : 
             
@@ -87,7 +87,7 @@ namespace LibraryWeb.Services.Services
             {
                 Type = ApiType.PUT,
                 Data = bookUpdateDTO,
-                Url = $"{_libraryApiUrl}/api/BookAPI" + $"/{bookUpdateDTO.Id}"
+                Url = $"{_libraryApiUrl}/api/v1/BookAPI" + $"/{bookUpdateDTO.Id}"
             });
 
             if (apiResponse.IsSuccess && apiResponse.Result != null)

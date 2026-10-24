@@ -25,7 +25,7 @@ namespace LibraryWeb.Services.Services
             {
                 Type = ApiType.POST,
                 Data = bookCopyCreateDTO,
-                Url = $"{_libraryApiUrl}/api/BookCopyAPI"
+                Url = $"{_libraryApiUrl}/api/v1/BookCopyAPI"
             });
 
             if (apiResponse.IsSuccess && apiResponse.Result != null)
@@ -43,7 +43,7 @@ namespace LibraryWeb.Services.Services
             {
                 Type = ApiType.DELETE,
                 Data = copyNo,
-                Url = $"{_libraryApiUrl}/api/BookCopyAPI" + $"/{copyNo}"
+                Url = $"{_libraryApiUrl}/api/v1/BookCopyAPI" + $"/{copyNo}"
             });
 
             
@@ -55,7 +55,7 @@ namespace LibraryWeb.Services.Services
             var apiResponse = await SendAsync(new APIRequest
             {
                 Type = ApiType.GET,
-                Url = $"{_libraryApiUrl}/api/BookCopyAPI"
+                Url = $"{_libraryApiUrl}/api/v1/BookCopyAPI"
             });
             if (apiResponse.IsSuccess && apiResponse.Result != null)
             {
@@ -70,7 +70,7 @@ namespace LibraryWeb.Services.Services
             var apiResponse = await SendAsync(new APIRequest
             {
                 Type = ApiType.GET,
-                Url = $"{_libraryApiUrl}/api/BookCopyAPI" + $"/{copyNo}"
+                Url = $"{_libraryApiUrl}/api/v1/BookCopyAPI" + $"/{copyNo}"
             });
             if (apiResponse.IsSuccess && apiResponse.Result != null)
             {
@@ -86,7 +86,7 @@ namespace LibraryWeb.Services.Services
             {
                 Type = ApiType.PUT,
                 Data = bookCopyUpdateDTO,
-                Url = $"{_libraryApiUrl}/api/BookCopyAPI" + $"/{bookCopyUpdateDTO.CopyNo}"
+                Url = $"{_libraryApiUrl}/api/v1/BookCopyAPI" + $"/{bookCopyUpdateDTO.CopyNo}"
             });
             if (apiResponse.IsSuccess && apiResponse.Result != null)
             {

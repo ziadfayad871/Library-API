@@ -24,7 +24,7 @@ namespace LibraryWeb.Services.Services
             {
                 Type = ApiType.POST,
                 Data = loginRequestDTO,
-                Url = $"{_libraryApiUrl}/api/UserAPI/login"
+                Url = $"{_libraryApiUrl}/api/v1/UserAPI/login"
             });
 
             if (apiResponse != null && apiResponse.IsSuccess && apiResponse.Result != null)
@@ -41,7 +41,7 @@ namespace LibraryWeb.Services.Services
             {
                 Type = ApiType.POST,
                 Data = registrationRequestDTO,
-                Url = $"{_libraryApiUrl}/api/UserAPI/register"
+                Url = $"{_libraryApiUrl}/api/v1/UserAPI/register"
             });
 
             if (apiResponse != null && apiResponse.IsSuccess && apiResponse.Result != null)
