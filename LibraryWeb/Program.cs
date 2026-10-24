@@ -1,5 +1,6 @@
 using LibraryWeb.Services.IServices;
 using LibraryWeb.Services.Services;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 namespace LibraryWeb
 {
@@ -15,6 +16,19 @@ namespace LibraryWeb
             builder.Services.AddScoped<IBookService, BookService>();
             builder.Services.AddScoped<IBookCopyService, BookCopyService>();
             builder.Services.AddScoped<IAuthService, AuthService>();
+            builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+                .AddCookie(options =>
+                {
+                    options.Cookie.Name = "LibraryWebAuthCookie";
+                    options.Cookie.HttpOnly = true;
+                    options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
+                    options.LoginPath = "/Auth/Login";
+                    options.LogoutPath = "/Auth/Logout";
+                    options.AccessDeniedPath = "/Auth/AccessDenied";
+                   
+                   
+                   
+                });
 
 
             // Add services to the container.
@@ -32,7 +46,7 @@ namespace LibraryWeb
 
             app.UseHttpsRedirection();
             app.UseRouting();
-
+app.UseAuthentication();
             app.UseAuthorization();
 
             app.MapStaticAssets();

@@ -1,6 +1,9 @@
 ﻿using LibraryWeb.Models.AuthDTO;
 using LibraryWeb.Services.IServices;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using System.Text.Json;
 
 namespace LibraryWeb.Controllers
@@ -33,14 +36,28 @@ namespace LibraryWeb.Controllers
                 TempData["ErrorMessage"] = apiResponse?.ErrorMessages?.FirstOrDefault() ?? "Invalid username or password.";
                 return View(loginRequestDTO);
             }
-
+            // Deserialize the API response to get the user information and token
             var jsonOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
             var loginResponse = JsonSerializer.Deserialize<LoginResponseDTO>(
-                apiResponse.Result.ToString(), jsonOptions);
-
-            Response.Cookies.Append("JWTToken", loginResponse.Token);
-
+                JsonSerializer.Serialize(apiResponse.Result), jsonOptions);
+            // Create claims for the authenticated user
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Name, loginResponse.User.UserName),
+                new Claim(ClaimTypes.Role, loginResponse.User.Role)
+            };
+            // Create a claims identity and sign in the user
+            var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity));
+            // Store the JWT token in a secure cookie
+            Response.Cookies.Append("JWTToken", loginResponse.Token, new CookieOptions
+            {
+                HttpOnly = true,
+                Expires = DateTimeOffset.UtcNow.AddDays(7)
+            });
+            // Optionally, you can store the token in TempData or ViewData for use in the next request
             TempData["SuccessMessage"] = "Login successful.";
+            // Redirect to the home page or any other page after successful login
             return RedirectToAction("Index", "Home");
         }
 
@@ -70,8 +87,9 @@ namespace LibraryWeb.Controllers
         }
 
         [HttpGet]
-        public IActionResult Logout()
+        public async Task<IActionResult> Logout()
         {
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             Response.Cookies.Delete("JWTToken");
             return RedirectToAction("Index", "Home");
         }
