@@ -1,0 +1,59 @@
+@model RegistrationRequestDTO
+
+<div class="container pt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow border-0">
+                <div class="card-header bg-secondary bg-gradient ml-0 py-3">
+                    <div class="row">
+                        <div class="col-12 text-center">
+                            <h2 class="text-white py-2">Register</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post">
+                        <div class="border p-3">
+                            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                            <div class="form-floating py-2 col-12">
+                                <input asp-for="Name" class="form-control border-0 shadow" placeholder="Full Name" />
+                                <label asp-for="Name" class="ms-2"></label>
+                                <span asp-validation-for="Name" class="text-danger"></span>
+                            </div>
+                            <div class="form-floating py-2 col-12">
+                                <input asp-for="Username" class="form-control border-0 shadow" placeholder="Username" />
+                                <label asp-for="Username" class="ms-2"></label>
+                                <span asp-validation-for="Username" class="text-danger"></span>
+                            </div>
+                            <div class="form-floating py-2 col-12">
+                                <input asp-for="Password" type="password" class="form-control border-0 shadow" placeholder="Required Password" />
+                                <label asp-for="Password" class="ms-2"></label>
+                                <span asp-validation-for="Password" class="text-danger"></span>
+                            </div>
+                            <div class="form-floating py-2 col-12">
+                                <select asp-for="Role" class="form-select border-0 shadow">
+                                    <option value="Admin">Admin</option>
+                                    <option value="Customer">Customer</option>
+                                </select>
+                                <label asp-for="Role" class="ms-2"></label>
+                                <span asp-validation-for="Role" class="text-danger"></span>
+                            </div>
+                            <div class="row pt-2">
+                                <div class="col-6 col-md-3">
+                                    <button type="submit" class="btn btn-success form-control">Register</button>
+                                </div>
+                                <div class="col-6 col-md-6">
+                                    <a asp-action="Login" class="btn btn-outline-secondary form-control">Back to Login</a>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
