@@ -8,14 +8,16 @@ namespace LibraryWeb.Services.Services
     public class BaseService : IBaseService
     {
         private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly JsonSerializerOptions _jsonOptions = new JsonSerializerOptions
         {
             PropertyNameCaseInsensitive = true
         };
 
-        public BaseService(IHttpClientFactory httpClientFactory)
+        public BaseService(IHttpClientFactory httpClientFactory, IHttpContextAccessor httpContextAccessor)
         {
             _httpClientFactory = httpClientFactory;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<APIResponse> SendAsync(APIRequest request)
@@ -36,6 +38,12 @@ namespace LibraryWeb.Services.Services
                     }
                 };
                 message.Headers.Add("Accept", "application/json");
+
+                var token = _httpContextAccessor.HttpContext?.Request.Cookies["JWTToken"];
+                if (!string.IsNullOrEmpty(token))
+                {
+                    message.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+                }
 
                 if (request.Data != null && (request.Type == ApiType.POST || request.Type == ApiType.PUT))
                 {

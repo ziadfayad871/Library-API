@@ -1,6 +1,6 @@
 ﻿using LibraryWeb.Models.APIResponse;
 using LibraryWeb.Models.AuthDTO;
-using LibraryWeb.Services.IServices;
+     using LibraryWeb.Services.IServices;
 using System.Text.Json;
 
 namespace LibraryWeb.Services.Services
@@ -13,7 +13,7 @@ namespace LibraryWeb.Services.Services
             PropertyNameCaseInsensitive = true
         };
 
-        public AuthService(IHttpClientFactory httpClientFactory, IConfiguration configuration) : base(httpClientFactory)
+        public AuthService(IHttpClientFactory httpClientFactory, IConfiguration configuration, IHttpContextAccessor httpContextAccessor) : base(httpClientFactory, httpContextAccessor)
         {
             _libraryApiUrl = configuration.GetValue<string>("ServiceUrls:LibraryAPI");
         }

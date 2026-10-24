@@ -14,7 +14,7 @@ namespace LibraryWeb.Services.Services
         {
             PropertyNameCaseInsensitive = true
         };
-        public BookCopyService(IHttpClientFactory httpClientFactory, IConfiguration configuration) : base(httpClientFactory)
+        public BookCopyService(IHttpClientFactory httpClientFactory, IConfiguration configuration, IHttpContextAccessor httpContextAccessor) : base(httpClientFactory, httpContextAccessor)
         {
             _libraryApiUrl = configuration.GetValue<string>("ServiceUrls:LibraryAPI");
         }

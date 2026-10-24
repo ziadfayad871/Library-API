@@ -16,6 +16,7 @@ namespace LibraryWeb
             builder.Services.AddScoped<IBookService, BookService>();
             builder.Services.AddScoped<IBookCopyService, BookCopyService>();
             builder.Services.AddScoped<IAuthService, AuthService>();
+            builder.Services.AddHttpContextAccessor();
             builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
                 .AddCookie(options =>
                 {
