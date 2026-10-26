@@ -5,6 +5,7 @@ using Library_API.Repository.IRepository;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
+using System.Text.Json;
 
 namespace Library_API.Controllers
 {
@@ -22,10 +23,16 @@ namespace Library_API.Controllers
 
         [HttpGet]
         [ProducesResponseType(typeof(APIResponse), 200)]
+        [ProducesResponseType(typeof(APIResponse), 400)]
         public async Task<IActionResult> GetBooks(string? author = null, string search = null, decimal? minPrice = null, decimal? maxPrice = null, int pageNumber = 1, int pageSize = 5)
         {
-            var response = await _bookRepository.GetAllBooks(author , search , minPrice , maxPrice, pageNumber, pageSize);
-           
+            var response = await _bookRepository.GetAllBooks(author, search, minPrice, maxPrice, pageNumber, pageSize);
+
+            if (response.IsSuccess && response.Pagination != null)
+            {
+                Response.Headers["x-pagination"] = JsonSerializer.Serialize(response.Pagination);
+            }
+
             return StatusCode(response.StatusCode, response);
         }
 
