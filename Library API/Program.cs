@@ -7,7 +7,9 @@ using Library_API.Repository.IRepository;
 using Library_API.Repository.Repository;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using Scalar.AspNetCore;
@@ -46,11 +48,18 @@ namespace Library_API
                 options.ReportApiVersions = true;
             });
             // Add services to the container.
-
-            builder.Services.AddControllers().AddNewtonsoftJson();
+            builder.Services.AddResponseCaching();
+            builder.Services.AddControllers(options =>
+            {
+                options.CacheProfiles.Add("Default30", new CacheProfile
+                {
+                    Duration = 30
+                });
+            }).AddNewtonsoftJson();
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
             builder.Services.AddOpenApi(options =>
             {
+               
                 options.AddDocumentTransformer((document, context, cancellationToken) =>
                 {
                     document.Info ??= new OpenApiInfo();
@@ -66,9 +75,13 @@ namespace Library_API
                     };
                     return Task.CompletedTask;
                 });
+                
+                
+
             });
 
             var app = builder.Build();
+            app.UseResponseCaching();
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())

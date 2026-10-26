@@ -13,6 +13,7 @@ namespace Library_API.Controllers
     [Route("api/v{version:apiVersion}/BookAPI")]
     [ApiController]
     [Authorize]
+    // [ResponseCache(CacheProfileName = "Default30")]
     public class BookAPIController : ControllerBase
     {
         private readonly IBookRepository _bookRepository;
@@ -22,6 +23,8 @@ namespace Library_API.Controllers
         }
 
         [HttpGet]
+        [ResponseCache(CacheProfileName = "Default30", VaryByQueryKeys = new[] { "author", "search", "minPrice", "maxPrice", "pageNumber", "pageSize" })]
+        [AllowAnonymous]
         [ProducesResponseType(typeof(APIResponse), 200)]
         [ProducesResponseType(typeof(APIResponse), 400)]
         public async Task<IActionResult> GetBooks(string? author = null, string search = null, decimal? minPrice = null, decimal? maxPrice = null, int pageNumber = 1, int pageSize = 5)
@@ -48,6 +51,7 @@ namespace Library_API.Controllers
         [HttpPost]
         [ProducesResponseType(typeof(APIResponse), 201)]
         [ProducesResponseType(typeof(APIResponse), 400)]
+        
         public async Task<IActionResult> CreateBook([FromBody] BookCreateDTO bookCreateDTO)
         {
             if (!ModelState.IsValid)
