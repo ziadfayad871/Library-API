@@ -53,6 +53,9 @@ namespace Library_API
             {
                 options.AddDocumentTransformer((document, context, cancellationToken) =>
                 {
+                    document.Info ??= new OpenApiInfo();
+                    document.Info.Version = "v1.0";
+
                     document.Components ??= new OpenApiComponents();
                     document.Components.SecuritySchemes ??= new Dictionary<string, IOpenApiSecurityScheme>();
                     document.Components.SecuritySchemes["Bearer"] = new OpenApiSecurityScheme

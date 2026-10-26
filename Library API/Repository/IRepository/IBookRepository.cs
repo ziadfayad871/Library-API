@@ -8,7 +8,7 @@ namespace Library_API.Repository.IRepository
         public Task<APIResponse> CreateBook(BookCreateDTO bookCreateDTO);
         public Task<APIResponse> UpdateBook(BookUpdateDTO bookUpdateDTO);
         public Task<APIResponse> GetBookById(int bookId);
-        public Task<APIResponse> GetAllBooks(string? author = null);
+        public Task<APIResponse> GetAllBooks(string author = null , string search = null , decimal? minPrice = null , decimal? maxPrice = null);
         public Task<APIResponse> DeleteBook(int bookId);
         public Task<bool> Save();
     }

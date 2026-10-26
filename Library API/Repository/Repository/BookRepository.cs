@@ -98,11 +98,26 @@ namespace Library_API.Repository.Repository
             };
         }
 
-        public async Task<APIResponse> GetAllBooks(string? author = null)
+        public async Task<APIResponse> GetAllBooks(string? author = null, string search = null, decimal? minPrice = null, decimal? maxPrice = null)
         {
             var query = _context.Books.AsNoTracking().AsQueryable();
-            if (!string.IsNullOrEmpty(author))
+            if (!string.IsNullOrWhiteSpace(author))
                 query = query.Where(b => b.Author.Contains(author));
+            if (!string.IsNullOrWhiteSpace(search))
+                query = query.Where(b => b.Name.Contains(search) || b.Description.Contains(search));
+            if (minPrice.HasValue)
+                query = query.Where(b => b.Price >= minPrice.Value);
+            if (maxPrice.HasValue)
+                query = query.Where(b => b.Price <= maxPrice.Value);
+            if (minPrice.HasValue && maxPrice.HasValue && minPrice > maxPrice)
+            {
+                return new APIResponse
+                {
+                    StatusCode = 400,
+                    IsSuccess = false,
+                    ErrorMessages = new List<string> { "Minimum price cannot be greater than maximum price." }
+                };
+            }
             var books = await query.ToListAsync();
             return new APIResponse
             {
