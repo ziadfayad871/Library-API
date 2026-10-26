@@ -98,7 +98,7 @@ namespace Library_API.Repository.Repository
             };
         }
 
-        public async Task<APIResponse> GetAllBooks(string? author = null, string search = null, decimal? minPrice = null, decimal? maxPrice = null)
+        public async Task<APIResponse> GetAllBooks(string? author = null, string search = null, decimal? minPrice = null, decimal? maxPrice = null, int pageNumber = 1, int pageSize = 5)
         {
             var query = _context.Books.AsNoTracking().AsQueryable();
             if (!string.IsNullOrWhiteSpace(author))
@@ -118,7 +118,25 @@ namespace Library_API.Repository.Repository
                     ErrorMessages = new List<string> { "Minimum price cannot be greater than maximum price." }
                 };
             }
+            if (pageNumber <= 0 || pageSize <= 0)
+            {
+                return new APIResponse
+                {
+                    StatusCode = 400,
+                    IsSuccess = false,
+                    ErrorMessages = new List<string> { "Page number and page size must be greater than zero." }
+                };
+            }
+            if (pageSize > 100)
+            {
+                pageSize = 100;
+            }
+            query = query.OrderBy(b => b.Id)
+                         .Skip((pageNumber - 1) * pageSize)
+                         .Take(pageSize);
+
             var books = await query.ToListAsync();
+
             return new APIResponse
             {
                 StatusCode = 200,

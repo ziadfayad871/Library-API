@@ -22,9 +22,9 @@ namespace Library_API.Controllers
 
         [HttpGet]
         [ProducesResponseType(typeof(APIResponse), 200)]
-        public async Task<IActionResult> GetBooks(string? author = null, string search = null, decimal? minPrice = null, decimal? maxPrice = null)
+        public async Task<IActionResult> GetBooks(string? author = null, string search = null, decimal? minPrice = null, decimal? maxPrice = null, int pageNumber = 1, int pageSize = 5)
         {
-            var response = await _bookRepository.GetAllBooks(author , search , minPrice , maxPrice);
+            var response = await _bookRepository.GetAllBooks(author , search , minPrice , maxPrice, pageNumber, pageSize);
            
             return StatusCode(response.StatusCode, response);
         }
