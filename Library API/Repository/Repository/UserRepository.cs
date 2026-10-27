@@ -1,10 +1,8 @@
 ﻿using AutoMapper;
-using Library_API.Data;
 using Library_API.Dtos;
-using Library_API.Models;
+using Library_API.Model;
 using Library_API.Repository.IRepository;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -14,57 +12,73 @@ namespace Library_API.Repository.Repository
 {
     public class UserRepository : IUserRepository
     {
-        private readonly ApplicationDbContext _context;
         private readonly IMapper _mapper;
-        private readonly IPasswordHasher<User> _passwordHasher;
         private readonly IConfiguration _configuration;
-        public UserRepository(ApplicationDbContext context, IMapper mapper , IPasswordHasher<User> passwordHasher, IConfiguration configuration)
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly RoleManager<IdentityRole> _roleManager;
+
+        public UserRepository(
+            IMapper mapper,
+            IConfiguration configuration,
+            RoleManager<IdentityRole> roleManager,
+            UserManager<ApplicationUser> userManager)
         {
-            _context = context;
             _mapper = mapper;
-            _passwordHasher = passwordHasher;
             _configuration = configuration;
+            _roleManager = roleManager;
+            _userManager = userManager;
         }
 
         public async Task<bool> IsUniqueUser(string username)
         {
-            var exists = await _context.LegacyUsers.AnyAsync(u => u.UserName == username);
+            var user = await _userManager.FindByNameAsync(username);
 
             // If user is null, it means the username is unique (not found in the database)
-            return !exists;
-
-
-
+            return user == null;
         }
 
         public async Task<LoginResponseDTO> Login(LoginRequestDTO loginRequestDTO)
         {
-            var user = await _context.LegacyUsers.FirstOrDefaultAsync(u => u.UserName == loginRequestDTO.Username);
+            var user = await _userManager.FindByNameAsync(loginRequestDTO.Username);
             if (user == null)
             {
                 return null;
             }
-            var passwordVerificationResult = _passwordHasher.VerifyHashedPassword(user, user.Password, loginRequestDTO.Password);
-            if (passwordVerificationResult == PasswordVerificationResult.Failed)
+
+            var passwordIsValid = await _userManager.CheckPasswordAsync(user, loginRequestDTO.Password);
+            if (!passwordIsValid)
             {
                 return null;
             }
-        var userDTO = _mapper.Map<UserDTO>(user);
+
+            var roles = await _userManager.GetRolesAsync(user);
+            var role = roles.FirstOrDefault();
+            if (string.IsNullOrEmpty(role))
+            {
+                return null;
+            }
+
+            var userDTO = _mapper.Map<UserDTO>(user);
+            userDTO.Role = role;
+
             var secret = _configuration.GetValue<string>("ApiSettings:Secret");
             var key = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(secret));
-            var Claims = new List<Claim>
-{
-    new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
-    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-    new Claim(ClaimTypes.Name, user.UserName),
-    new Claim(ClaimTypes.Role, user.Role),
-    new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
-};
+            var claims = new List<Claim>
+            {
+                new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new Claim(JwtRegisteredClaimNames.Name, user.Name ?? string.Empty),
+                new Claim(ClaimTypes.Name, user.UserName),
+                new Claim(ClaimTypes.NameIdentifier, user.Id),
+                new Claim(ClaimTypes.Role, role),
+                new Claim(ClaimTypes.Email, user.Email ?? string.Empty)
+            };
+
             var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
             var token = new JwtSecurityToken(
-    claims: Claims,
-    expires: DateTime.UtcNow.AddDays(7),
-    signingCredentials: credentials);
+                claims: claims,
+                expires: DateTime.UtcNow.AddDays(7),
+                signingCredentials: credentials);
 
             var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
             return new LoginResponseDTO { User = userDTO, Token = tokenString };
@@ -72,24 +86,47 @@ namespace Library_API.Repository.Repository
 
         public async Task<UserDTO> Register(RegistrationRequestDTO registrationRequestDTO)
         {
-            // Uniqueness check for username can be implemented here before saving the user to the database
-            if (!await IsUniqueUser(registrationRequestDTO.Username))
+            var existingUser = await _userManager.FindByNameAsync(registrationRequestDTO.Username);
+            if (existingUser != null)
             {
                 return null;
             }
-            var user = _mapper.Map<User>(registrationRequestDTO);
-            
-            await _context.LegacyUsers.AddAsync(user);
-            
-            // password hashing can be implemented here before saving the user to the database : 
-            if (registrationRequestDTO.Password != null)
+
+            var newUser = _mapper.Map<ApplicationUser>(registrationRequestDTO);
+            newUser.UserName = registrationRequestDTO.Username;
+            newUser.Email = registrationRequestDTO.Username;
+            newUser.Name = registrationRequestDTO.Name;
+
+            var createResult = await _userManager.CreateAsync(newUser, registrationRequestDTO.Password);
+            if (!createResult.Succeeded)
             {
-                user.Password = _passwordHasher.HashPassword(user, registrationRequestDTO.Password);
+                return null;
             }
-            
-            // Save the changes to the database
-            await _context.SaveChangesAsync();
-            return _mapper.Map<UserDTO>(user);
+
+            var role = string.IsNullOrWhiteSpace(registrationRequestDTO.Role)
+                ? "Customer"
+                : registrationRequestDTO.Role;
+
+            if (!await _roleManager.RoleExistsAsync(role))
+            {
+                var roleResult = await _roleManager.CreateAsync(new IdentityRole(role));
+                if (!roleResult.Succeeded)
+                {
+                    await _userManager.DeleteAsync(newUser);
+                    return null;
+                }
+            }
+
+            var addToRoleResult = await _userManager.AddToRoleAsync(newUser, role);
+            if (!addToRoleResult.Succeeded)
+            {
+                await _userManager.DeleteAsync(newUser);
+                return null;
+            }
+
+            var userDTO = _mapper.Map<UserDTO>(newUser);
+            userDTO.Role = role;
+            return userDTO;
         }
     }
 }

@@ -2,7 +2,6 @@
 using Library_API.Dtos;
 using Library_API.Dtos.BookCopyDTOs;
 using Library_API.Model;
-using Library_API.Models;
 
 namespace Library_API
 {
@@ -31,11 +30,10 @@ namespace Library_API
             CreateMap<BookCopy, BookCopyDTO>();
             CreateMap<BookCopyDTO, BookCopy>();
             // User mapping
-            CreateMap<User, UserDTO>();
-
-            CreateMap<RegistrationRequestDTO, User>();
-
-
+            CreateMap<ApplicationUser, UserDTO>();
+            CreateMap<RegistrationRequestDTO, ApplicationUser>()
+                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Username))
+                .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Username));
         }
     }
 }
