@@ -1,22 +1,21 @@
 ﻿
 using Library_API.Model;
 using Library_API.Models;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace Library_API.Data
 {
-    public class ApplicationDbContext : DbContext
+    public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
-        public ApplicationDbContext(
-            DbContextOptions<ApplicationDbContext> options)
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
         {
         }
 
         public DbSet<Book> Books { get; set; }
         public DbSet<BookCopy> BookCopies { get; set; }
-        public DbSet<User> Users { get; set; }
-
+        public DbSet<User> LegacyUsers { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -71,6 +70,10 @@ namespace Library_API.Data
             modelBuilder.Entity<Book>()
                 .HasIndex(b => b.Name)
                 .IsUnique();
+
+            modelBuilder.Entity<User>()
+                .ToTable("Users");
+
             modelBuilder.Entity<User>()
                 .HasIndex(u => u.UserName)
                 .IsUnique();

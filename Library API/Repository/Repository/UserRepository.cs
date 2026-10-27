@@ -28,7 +28,7 @@ namespace Library_API.Repository.Repository
 
         public async Task<bool> IsUniqueUser(string username)
         {
-            var exists = await _context.Users.AnyAsync(u => u.UserName == username);
+            var exists = await _context.LegacyUsers.AnyAsync(u => u.UserName == username);
 
             // If user is null, it means the username is unique (not found in the database)
             return !exists;
@@ -39,7 +39,7 @@ namespace Library_API.Repository.Repository
 
         public async Task<LoginResponseDTO> Login(LoginRequestDTO loginRequestDTO)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserName == loginRequestDTO.Username);
+            var user = await _context.LegacyUsers.FirstOrDefaultAsync(u => u.UserName == loginRequestDTO.Username);
             if (user == null)
             {
                 return null;
@@ -79,7 +79,7 @@ namespace Library_API.Repository.Repository
             }
             var user = _mapper.Map<User>(registrationRequestDTO);
             
-            await _context.Users.AddAsync(user);
+            await _context.LegacyUsers.AddAsync(user);
             
             // password hashing can be implemented here before saving the user to the database : 
             if (registrationRequestDTO.Password != null)

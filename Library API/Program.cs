@@ -2,6 +2,7 @@
 using Asp.Versioning;
 using Library_API;
 using Library_API.Data;
+using Library_API.Model;
 using Library_API.Models;
 using Library_API.Repository.IRepository;
 using Library_API.Repository.Repository;
@@ -24,6 +25,9 @@ namespace Library_API
             var builder = WebApplication.CreateBuilder(args);
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+            builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
+                .AddEntityFrameworkStores<ApplicationDbContext>()
+                .AddDefaultTokenProviders();
             builder.Services.AddAutoMapper(cfg => { }, typeof(MappingConfig).Assembly);
             builder.Services.AddScoped<IBookRepository, BookRepository>();
             builder.Services.AddScoped<IBookCopyRepository, BookCopyRepository>();
@@ -75,9 +79,7 @@ namespace Library_API
                     };
                     return Task.CompletedTask;
                 });
-                
-                
-
+     
             });
 
             var app = builder.Build();
