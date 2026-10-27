@@ -2,6 +2,7 @@
 
 @{
     ViewData["Title"] = "Books";
+    var isAuthenticated = User.Identity != null && User.Identity.IsAuthenticated;
 }
 
 <div class="container p-3">
@@ -10,13 +11,23 @@
             <h2 class="text-primary">Book List</h2>
         </div>
         <div class="col-6 text-end">
-            <a asp-controller="Book" asp-action="Create" class="btn btn-primary">
-                Create New Book
-            </a>
+            @if (isAuthenticated)
+            {
+                <a asp-controller="Book" asp-action="Create" class="btn btn-primary">
+                    Create New Book
+                </a>
+            }
         </div>
     </div>
 
     <br />
+
+    @if (!isAuthenticated)
+    {
+        <div class="alert alert-info">
+            Please <a asp-controller="Auth" asp-action="Login">login</a> to manage books.
+        </div>
+    }
 
     @if (TempData["Success"] != null)
     {
@@ -47,7 +58,10 @@
                 <th>Price</th>
                 <th>Pages</th>
                 <th>Published Year</th>
-                <th>Actions</th>
+                @if (isAuthenticated)
+                {
+                    <th>Actions</th>
+                }
             </tr>
         </thead>
         <tbody>
@@ -61,19 +75,22 @@
                         <td>@book.Price.ToString("0.00")</td>
                         <td>@book.Pages</td>
                         <td>@book.PublishedYear.ToString("yyyy-MM-dd")</td>
-                        <td>
-                            <a asp-action="Update" asp-route-id="@book.Id" class="btn btn-sm btn-warning">Edit</a>
-                            <form asp-action="Delete" asp-route-id="@book.Id" method="post" class="d-inline delete-form">
-                                <button type="submit" class="btn btn-sm btn-danger">Delete</button>
-                            </form>
-                        </td>
+                        @if (isAuthenticated)
+                        {
+                            <td>
+                                <a asp-action="Update" asp-route-id="@book.Id" class="btn btn-sm btn-warning">Edit</a>
+                                <form asp-action="Delete" asp-route-id="@book.Id" method="post" class="d-inline delete-form">
+                                    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                                </form>
+                            </td>
+                        }
                     </tr>
                 }
             }
             else
             {
                 <tr>
-                    <td colspan="6" class="text-center">No books found.</td>
+                    <td colspan="@(isAuthenticated ? 6 : 5)" class="text-center">No books found.</td>
                 </tr>
             }
         </tbody>

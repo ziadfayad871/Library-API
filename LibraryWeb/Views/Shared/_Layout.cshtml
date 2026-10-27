@@ -35,13 +35,12 @@
                         </li>
                     </ul>
                     <ul class="navbar-nav align-items-center">
-                        @if (User.Identity.IsAuthenticated)
+                        @if (User.Identity != null && User.Identity.IsAuthenticated)
                         {
-                            var displayName = User.FindFirst("name")?.Value ?? User.Identity.Name;
                             var role = User.FindFirst(ClaimTypes.Role)?.Value;
 
                             <li class="nav-item">
-                                <span class="nav-link text-dark">Hello, @displayName</span>
+                                <span class="nav-link text-dark">Hello, @User.Identity.Name</span>
                             </li>
                             @if (!string.IsNullOrWhiteSpace(role))
                             {

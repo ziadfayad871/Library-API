@@ -3,6 +3,7 @@ using LibraryWeb.Services.IServices;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text.Json;
@@ -54,6 +55,11 @@ namespace LibraryWeb.Controllers
             {
                 claims = ReadClaimsFromToken(loginResponse.Token);
             }
+            catch (SecurityTokenExpiredException)
+            {
+                TempData["ErrorMessage"] = "Login failed: the token has expired.";
+                return View(loginRequestDTO);
+            }
             catch (Exception)
             {
                 TempData["ErrorMessage"] = "Login failed: the token could not be read.";
@@ -88,7 +94,7 @@ namespace LibraryWeb.Controllers
 
             if (jwtToken.ValidTo != DateTime.MinValue && jwtToken.ValidTo < DateTime.UtcNow)
             {
-                return null;
+                throw new SecurityTokenExpiredException("The token has expired.");
             }
 
             var userId = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;

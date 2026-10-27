@@ -3,6 +3,7 @@
 @{
     ViewData["Title"] = "Book Copies";
     var bookTitles = ViewData["BookTitles"] as Dictionary<int, string>;
+    var isAuthenticated = User.Identity != null && User.Identity.IsAuthenticated;
 }
 
 <div class="container p-3">
@@ -11,13 +12,23 @@
             <h2 class="text-primary">Book Copy List</h2>
         </div>
         <div class="col-6 text-end">
-            <a asp-controller="BookCopy" asp-action="Create" class="btn btn-primary">
-                Create New Book Copy
-            </a>
+            @if (isAuthenticated)
+            {
+                <a asp-controller="BookCopy" asp-action="Create" class="btn btn-primary">
+                    Create New Book Copy
+                </a>
+            }
         </div>
     </div>
 
     <br />
+
+    @if (!isAuthenticated)
+    {
+        <div class="alert alert-info">
+            Please <a asp-controller="Auth" asp-action="Login">login</a> to manage book copies.
+        </div>
+    }
 
     @if (TempData["Success"] != null)
     {
@@ -37,7 +48,10 @@
                 <th>Shelf Location</th>
                 <th>Availability</th>
                 <th>Condition</th>
-                <th>Actions</th>
+                @if (isAuthenticated)
+                {
+                    <th>Actions</th>
+                }
             </tr>
         </thead>
         <tbody>
@@ -64,19 +78,22 @@
                             }
                         </td>
                         <td>@copy.Condition</td>
-                        <td>
-                            <a asp-action="Update" asp-route-id="@copy.CopyNo" class="btn btn-sm btn-warning">Edit</a>
-                            <form asp-action="Delete" asp-route-id="@copy.CopyNo" method="post" class="d-inline delete-form">
-                                <button type="submit" class="btn btn-sm btn-danger">Delete</button>
-                            </form>
-                        </td>
+                        @if (isAuthenticated)
+                        {
+                            <td>
+                                <a asp-action="Update" asp-route-id="@copy.CopyNo" class="btn btn-sm btn-warning">Edit</a>
+                                <form asp-action="Delete" asp-route-id="@copy.CopyNo" method="post" class="d-inline delete-form">
+                                    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                                </form>
+                            </td>
+                        }
                     </tr>
                 }
             }
             else
             {
                 <tr>
-                    <td colspan="6" class="text-center">No book copies found.</td>
+                    <td colspan="@(isAuthenticated ? 6 : 5)" class="text-center">No book copies found.</td>
                 </tr>
             }
         </tbody>
