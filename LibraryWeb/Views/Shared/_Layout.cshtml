@@ -34,12 +34,21 @@
                             <a class="nav-link text-dark" asp-area="" asp-controller="BookCopy" asp-action="Index">Copies</a>
                         </li>
                     </ul>
-                    <ul class="navbar-nav">
+                    <ul class="navbar-nav align-items-center">
                         @if (User.Identity.IsAuthenticated)
                         {
+                            var displayName = User.FindFirst("name")?.Value ?? User.Identity.Name;
+                            var role = User.FindFirst(ClaimTypes.Role)?.Value;
+
                             <li class="nav-item">
-                                <a class="nav-link text-dark" href="#">Hello, @User.Identity.Name</a>
+                                <span class="nav-link text-dark">Hello, @displayName</span>
                             </li>
+                            @if (!string.IsNullOrWhiteSpace(role))
+                            {
+                                <li class="nav-item me-2">
+                                    <span class="badge bg-info">@role</span>
+                                </li>
+                            }
                             <li class="nav-item">
                                 <a class="nav-link text-dark" asp-controller="Auth" asp-action="Logout">Logout</a>
                             </li>

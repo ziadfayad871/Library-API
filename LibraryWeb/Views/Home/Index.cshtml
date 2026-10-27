@@ -6,3 +6,32 @@
     <h1 class="display-4">Welcome</h1>
     <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
 </div>
+
+@if (User.Identity != null && User.Identity.IsAuthenticated)
+{
+    <div class="card shadow border-0 mt-4">
+        <div class="card-header bg-secondary bg-gradient py-3">
+            <h4 class="text-white mb-0">Account Information</h4>
+        </div>
+        <div class="card-body p-4">
+            <dl class="row mb-0">
+                <dt class="col-sm-3">User ID</dt>
+                <dd class="col-sm-9">@User.FindFirst(ClaimTypes.NameIdentifier)?.Value</dd>
+
+                <dt class="col-sm-3">Username</dt>
+                <dd class="col-sm-9">@User.Identity.Name</dd>
+
+                <dt class="col-sm-3">Display Name</dt>
+                <dd class="col-sm-9">@User.FindFirst("name")?.Value</dd>
+
+                <dt class="col-sm-3">Email</dt>
+                <dd class="col-sm-9">@User.FindFirst(ClaimTypes.Email)?.Value</dd>
+
+                <dt class="col-sm-3">Role</dt>
+                <dd class="col-sm-9">
+                    <span class="badge bg-info">@User.FindFirst(ClaimTypes.Role)?.Value</span>
+                </dd>
+            </dl>
+        </div>
+    </div>
+}

@@ -3,6 +3,7 @@ using LibraryWeb.Services.IServices;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text.Json;
 
@@ -36,29 +37,92 @@ namespace LibraryWeb.Controllers
                 TempData["ErrorMessage"] = apiResponse?.ErrorMessages?.FirstOrDefault() ?? "Invalid username or password.";
                 return View(loginRequestDTO);
             }
+
             // Deserialize the API response to get the user information and token
             var jsonOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
             var loginResponse = JsonSerializer.Deserialize<LoginResponseDTO>(
                 JsonSerializer.Serialize(apiResponse.Result), jsonOptions);
-            // Create claims for the authenticated user
-            var claims = new List<Claim>
+
+            if (loginResponse == null || string.IsNullOrWhiteSpace(loginResponse.Token))
             {
-                new Claim(ClaimTypes.Name, loginResponse.User.UserName),
-                new Claim(ClaimTypes.Role, loginResponse.User.Role)
-            };
+                TempData["ErrorMessage"] = "Login failed: the server did not return a valid token.";
+                return View(loginRequestDTO);
+            }
+
+            List<Claim> claims;
+            try
+            {
+                claims = ReadClaimsFromToken(loginResponse.Token);
+            }
+            catch (Exception)
+            {
+                TempData["ErrorMessage"] = "Login failed: the token could not be read.";
+                return View(loginRequestDTO);
+            }
+
+            if (claims == null)
+            {
+                TempData["ErrorMessage"] = "Login failed: the token is missing required claims.";
+                return View(loginRequestDTO);
+            }
+
             // Create a claims identity and sign in the user
             var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity));
+
             // Store the JWT token in a secure cookie
             Response.Cookies.Append("JWTToken", loginResponse.Token, new CookieOptions
             {
                 HttpOnly = true,
                 Expires = DateTimeOffset.UtcNow.AddDays(7)
             });
-            // Optionally, you can store the token in TempData or ViewData for use in the next request
+
             TempData["SuccessMessage"] = "Login successful.";
-            // Redirect to the home page or any other page after successful login
             return RedirectToAction("Index", "Home");
+        }
+
+        private static List<Claim> ReadClaimsFromToken(string token)
+        {
+            var handler = new JwtSecurityTokenHandler();
+            var jwtToken = handler.ReadJwtToken(token);
+
+            if (jwtToken.ValidTo != DateTime.MinValue && jwtToken.ValidTo < DateTime.UtcNow)
+            {
+                return null;
+            }
+
+            var userId = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            var userName = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value
+                ?? jwtToken.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Sub)?.Value;
+            var role = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
+            var email = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+            var displayName = jwtToken.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Name)?.Value;
+
+            if (string.IsNullOrWhiteSpace(userId) ||
+                string.IsNullOrWhiteSpace(userName) ||
+                string.IsNullOrWhiteSpace(role))
+            {
+                return null;
+            }
+
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, userId),
+                new Claim(ClaimTypes.Name, userName),
+                new Claim(ClaimTypes.Role, role)
+            };
+
+            if (!string.IsNullOrWhiteSpace(email))
+            {
+                claims.Add(new Claim(ClaimTypes.Email, email));
+            }
+
+            if (!string.IsNullOrWhiteSpace(displayName))
+            {
+                claims.Add(new Claim(JwtRegisteredClaimNames.Name, displayName));
+            }
+
+            return claims;
         }
 
         [HttpGet]
