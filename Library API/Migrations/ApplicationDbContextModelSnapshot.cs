@@ -125,7 +125,7 @@ namespace Library_API.Migrations
                         .IsUnique()
                         .HasFilter("[Name] IS NOT NULL");
 
-                    b.ToTable("Books");
+                    b.ToTable("Books", (string)null);
 
                     b.HasData(
                         new
@@ -196,7 +196,7 @@ namespace Library_API.Migrations
 
                     b.HasIndex("BookId");
 
-                    b.ToTable("BookCopies");
+                    b.ToTable("BookCopies", (string)null);
                 });
 
             modelBuilder.Entity("Library_API.Models.User", b =>
